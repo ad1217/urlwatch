@@ -40,6 +40,7 @@ from .filters import FilterBase
 from .handler import JobState, Report
 from .jobs import JobBase, UrlJob
 from .reporters import ReporterBase
+from .rss import RSSGenerator
 from .util import atomic_rename, edit_file, import_module_from_source
 from .mailer import set_password, have_password
 from .xmpp import xmpp_have_password, xmpp_set_password
@@ -188,6 +189,10 @@ class UrlwatchCommand:
 
         return 0
 
+    def export_rss(self, output_file):
+        generator = RSSGenerator(self.urlwatcher.cache_storage, max_history=10)
+        generator.generate_feed(self.urlwatcher.jobs, {}, output_file)
+
     def modify_urls(self):
         save = True
         if self.urlwatch_config.delete is not None:
@@ -276,6 +281,8 @@ class UrlwatchCommand:
             sys.exit(self.test_diff_filter(self.urlwatch_config.test_diff_filter))
         if self.urlwatch_config.dump_history:
             sys.exit(self.dump_history(self.urlwatch_config.dump_history))
+        if self.urlwatch_config.export_rss:
+            sys.exit(self.export_rss(self.urlwatch_config.export_rss))
         if self.urlwatch_config.list:
             sys.exit(self.list_urls())
         if (self.urlwatch_config.add is not None
